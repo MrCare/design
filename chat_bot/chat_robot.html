@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>田间助手 - 智能农业助手</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+      /* 修改主题色变量 */
+      :root {
+        --primary-dark: #1a237e;
+        --primary: #0d47a1;
+        --primary-light: #2196f3;
+        --accent: #82b1ff;
+        --warning: #ff9800;
+        --danger: #f44336;
+        --success: #4caf50;
+        --info: #2196f3;
+      }
+
+      /* 修改背景渐变 */
+        body {
+        font-family: "Helvetica", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        background: linear-gradient(-45deg, #1a237e, #0d47a1, #2196f3, #82b1ff);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 0;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+        background: linear-gradient(135deg, #1a237e, #0d47a1);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        .header h1 {
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 2px;
+            margin: 0;
+        font-family: 'Montserrat', sans-serif;
+      }
+      .header p {
+        font-size: 14px;
+        margin-top: 5px;
+        opacity: 0.9;
+        font-weight: 300;
+        letter-spacing: 1px;
+      }
+      .cn-slogan {
+        font-size: 12px;
+        opacity: 0.8;
+        margin-top: 2px;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .nav button {
+            padding: 12px 25px;
+            border: none;
+        background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            border-radius: 25px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+      }
+      .nav button:hover,
+      .nav button.active {
+        background-color: var(--primary-dark);
+      }
+      .nav button:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          120deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        transition: all 0.5s;
+      }
+      .nav button:hover:before {
+        left: 100%;
+        }
+        .section {
+            display: none;
+            padding: 20px;
+        }
+        .section.active {
+            display: block;
+        }
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #fafafa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 70%;
+            word-wrap: break-word;
+        animation: fadeIn 0.5s ease;
+        transition: transform 0.3s ease;
+      }
+      .message:hover {
+        transform: scale(1.02);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        }
+        .user-message {
+        background-color: var(--primary-light);
+        color: white;
+            margin-left: auto;
+        margin-right: 10px;
+            text-align: right;
+        position: relative;
+        float: right;
+        clear: both;
+        }
+        .bot-message {
+        background-color: #e3f2fd;
+        color: #333;
+            margin-right: auto;
+        margin-left: 10px;
+        float: left;
+        clear: both;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .input-area input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+      .input-area input[type="text"]:focus {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+      .input-area button,
+      .input-area label {
+            padding: 12px 20px;
+            border: none;
+        background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            border-radius: 25px;
+        transition: all 0.3s ease;
+        }
+      .input-area button:hover,
+      .input-area label:hover {
+        background-color: var(--primary-dark);
+        }
+        .input-area input[type="file"] {
+            display: none;
+        }
+      .market-table,
+      .training-content {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+      .market-table th,
+      .market-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .market-table th {
+        background-color: var(--primary);
+            color: white;
+        }
+      .market-table tr:hover {
+        background-color: rgba(13, 71, 161, 0.1);
+        transition: background-color 0.3s ease;
+      }
+        .training-content img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .alert-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        background-color: var(--warning);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+        animation: slideIn 0.5s ease;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      /* 添加语音输入按钮样式 */
+      .input-area .voice-btn {
+        padding: 12px 20px;
+        background-color: var(--primary);
+        color: white;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        user-select: none;
+      }
+      .input-area .voice-btn.recording {
+        background-color: var(--success);
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      /* 录音动画波纹 */
+      .recording-wave {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 150px;
+        height: 150px;
+        background: rgba(13, 71, 161, 0.8);
+        border-radius: 50%;
+        animation: wave 1s infinite;
+      }
+      @keyframes wave {
+        0% {
+          transform: translate(-50%, -50%) scale(0.8);
+          opacity: 0.8;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1.2);
+          opacity: 0;
+        }
+      }
+      /* 修改手机框架样式 */
+      .phone-frame {
+        margin: 0;
+        position: relative;
+        width: 375px;
+        height: 812px;
+        background: var(--primary);
+        border-radius: 40px;
+        box-shadow: 0 0 0 11px #1f1f1f, 0 0 0 13px #191919, 0 0 0 20px #111;
+        overflow: hidden;
+      }
+
+      /* 修改容器样式，让内容区域保持白色背景 */
+      .container {
+        max-width: 100%;
+        height: 98%;  /* 改为100% */
+        margin: 0;
+        padding: 0;    /* 移除顶部padding */
+        border-radius: 0;
+        overflow-y: visible;
+        position: relative;
+        background: #fff; /* 确保内容区域保持白色背景 */
+      }
+
+      /* 调整刘海屏样式 */
+      .phone-frame:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150px;
+        height: 30px;
+        background: #1f1f1f;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        z-index: 2;
+      }
+
+      /* 添加顶部状态栏区域 */
+      .status-bar {
+        height: 30px;
+        width: 100%;
+        background: linear-gradient(135deg, #1a237e, #0d47a1); /* 使用主题色 */
+        position: relative;
+        z-index: 1;
+      }
+
+      /* 调整header样式 */
+      .header {
+        border-radius: 0;
+        padding: 15px;
+      }
+
+      /* 调整聊天框样式 */
+      .chat-box {
+        height: calc(100vh - 250px);
+        max-height: 500px;
+      }
+
+      /* 调整输入区域样式 */
+      .input-area {
+        position: sticky;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-top: 1px solid #ddd;
+      }
+
+      /* 响应式调整 */
+      @media (max-height: 900px) {
+        body {
+          padding: 10px;
+        }
+        
+        .phone-frame {
+          transform: scale(0.9);
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 0;
+        }
+        
+        .phone-frame {
+          width: 100%;
+          height: 100vh;
+          border-radius: 0;
+          box-shadow: none;
+          transform: none;
+        }
+      }
+
+      /* 调整手机框架尺寸和样式 */
+      .phone-frame {
+        width: 375px;
+        height: 812px;
+        margin: 20px auto;
+        background: #fff;
+        border-radius: 40px;
+        box-shadow: 0 0 0 11px #1f1f1f, 0 0 0 13px #191919, 0 0 0 20px #111;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* 调整头部样式 */
+      .header {
+        padding: 10px;
+        height: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .header h1 {
+        font-size: 20px;
+        margin: 0;
+      }
+
+      .header p {
+        font-size: 12px;
+        margin: 5px 0 0;
+      }
+
+      /* 调整导航栏样式 */
+      .nav {
+        padding: 8px 5px;
+      }
+
+      .nav button {
+        padding: 8px 12px;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      /* 调整聊天区域 */
+      .chat-box {
+        height: calc(100% - 180px); /* 减去头部、导航和输入区域的高度 */
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .message {
+        padding: 8px 12px;
+        font-size: 14px;
+        max-width: 80%;
+        margin: 8px 0;
+      }
+
+      /* 调整输入区域样式 */
+      .input-area {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        background: #fff;
+        border-top: 1px solid #ddd;
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        gap: 8px;
+        height: 60px;
+      }
+
+      .input-area input[type="text"] {
+        width: 70%;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .input-area button,
+      .input-area label,
+      .input-area .voice-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      /* 调整市场行情表格 */
+      .market-table {
+        font-size: 14px;
+      }
+
+      .market-table th,
+      .market-table td {
+        padding: 8px;
+      }
+
+      /* 调整培训内容 */
+      .training-content {
+        padding: 10px;
+      }
+
+      .training-content h2 {
+        font-size: 18px;
+      }
+
+      .training-content h3 {
+        font-size: 16px;
+      }
+
+      .training-content p {
+        font-size: 14px;
+      }
+
+      /* 调整提醒弹窗 */
+      .alert-box {
+        width: 80%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 14px;
+        padding: 12px;
+      }
+
+      /* 响应式布局调整 */
+      @media (max-width: 480px) {
+        .phone-frame {
+          width: 100%;
+          height: 100vh;
+          margin: 0;
+          border-radius: 0;
+          box-shadow: none;
+        }
+
+        .container {
+          height: 100vh;
+        }
+
+        .chat-box {
+          height: calc(100vh - 180px);
+        }
+
+        .nav {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .nav::-webkit-scrollbar {
+          display: none;
+        }
+
+        .input-area {
+          position: fixed;
+          bottom: 0;
+        }
+      }
+
+      /* 优化滚动条 */
+      .chat-box::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chat-box::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      .chat-box::-webkit-scrollbar-thumb {
+        background: var(--primary-light);
+        border-radius: 3px;
+      }
+
+      /* 优化录音波纹位置 */
+      .recording-wave {
+        width: 100px;
+        height: 100px;
+      }
+
+      /* 优化搜索结果样式 */
+      .search-results {
+        background-color: #f5f5f5 !important;
+        border-left: 4px solid var(--primary);
+        font-size: 13px !important;
+        line-height: 1.6;
+        padding: 12px !important;
+      }
+
+      .search-item {
+        margin: 8px 0;
+        padding-left: 5px;
+      }
+
+      .search-item a {
+        color: var(--primary);
+        text-decoration: none;
+        display: block;
+        padding: 5px 0;
+        transition: all 0.2s ease;
+      }
+
+      .search-item a:hover {
+        background-color: rgba(26, 115, 232, 0.1);
+        border-radius: 4px;
+        padding-left: 5px;
+      }
+
+      .search-item .source {
+        color: var(--primary);
+        font-weight: 500;
+        margin-right: 8px;
+      }
+
+      .more-results {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .more-results a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .more-results a:hover {
+        text-decoration: underline;
+      }
+
+      /* 添加清除浮动的辅助类 */
+      .chat-box::after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      /* 修改链接颜色 */
+      a {
+        color: var(--primary);
+      }
+
+      .drone-monitor {
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 8px;
+        padding: 10px;
+        margin: 10px 0;
+      }
+
+      .video-placeholder {
+        background: linear-gradient(to bottom, #1a237e, #0d47a1);
+        height: 150px;
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .drone-animation {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        animation: flyDrone 4s ease-in-out infinite;
+      }
+
+      .drone-icon {
+        font-size: 2.5em;
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        animation: tiltDrone 2s ease-in-out infinite;
+      }
+
+      .scan-waves {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        animation: scanWave 2s linear infinite;
+      }
+
+      .scan-waves::before,
+      .scan-waves::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        animation: scanWave 2s linear infinite;
+        animation-delay: 0.5s;
+      }
+
+      .scan-waves::after {
+        animation-delay: 1s;
+      }
+
+      @keyframes flyDrone {
+        0%, 100% { transform: translate(-50%, -60%); }
+        50% { transform: translate(-50%, -40%); }
+      }
+
+      @keyframes tiltDrone {
+        0%, 100% { transform: rotate(-10deg); }
+        50% { transform: rotate(10deg); }
+      }
+
+      @keyframes scanWave {
+        0% {
+          width: 0;
+          height: 0;
+          opacity: 1;
+        }
+        100% {
+          width: 100px;
+          height: 100px;
+          opacity: 0;
+        }
+      }
+
+      .scan-line {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: var(--primary);
+        animation: scan 2s linear infinite;
+        box-shadow: 0 0 8px var(--primary);
+      }
+
+      @keyframes scan {
+        0% { top: 0; }
+        100% { top: 100%; }
+      }
+
+      .monitor-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .stat-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 8px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        font-size: 0.9em;
+        gap: 8px;
+      }
+
+      .stat-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .stat-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85em;
+      }
+
+      .stat-value {
+        color: #fff;
+        font-weight: 500;
+        margin-top: 2px;
+      }
+
+      .stat-item .material-icons {
+        font-size: 1.4em;
+      }
+
+      .stat-item:nth-child(1) .material-icons { color: #64b5f6; }  /* 扫描 - 蓝色 */
+      .stat-item:nth-child(2) .material-icons { color: #81c784; }  /* 正常 - 绿色 */
+      .stat-item:nth-child(3) .material-icons { color: #fff176; }  /* 杂草 - 黄色 */
+      .stat-item:nth-child(4) .material-icons { color: #e57373; }  /* 异常 - 红色 */
+
+      .stats-link {
+        margin: 20px 0;
+        padding: 0 15px;
+      }
+
+      .stats-button {
+        display: flex;
+        align-items: center;
+        background: rgba(var(--primary-rgb), 0.1);
+        padding: 15px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--primary);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .stats-button:hover {
+        background: rgba(var(--primary-rgb), 0.15);
+        transform: translateY(-2px);
+      }
+
+      .stats-icon {
+        background: var(--primary);
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+      }
+
+      .stats-icon .material-icons {
+        color: #fff;
+        font-size: 24px;
+      }
+
+      .stats-content {
+        flex: 1;
+      }
+
+      .stats-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        color: var(--primary);
+      }
+
+      .stats-desc {
+        font-size: 13px;
+        color: rgba(var(--primary-rgb), 0.8);
+      }
+
+      .price-trends {
+        /* margin: 20px 15px; */
+        padding: 15px;
+        background: rgba(var(--primary-rgb), 0.1);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+      }
+
+      .trends-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .trends-header h4 {
+        margin: 0;
+        color: var(--primary);
+        font-weight: 500;
+      }
+
+      .trends-legend {
+        display: flex;
+        gap: 15px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        color: var(--primary);
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+
+      .dot.rice { background: #4CAF50; }
+      .dot.wheat { background: #FFC107; }
+      .dot.corn { background: #2196F3; }
+
+      .chart-container {
+        position: relative;
+        height: 200px;
+        padding: 10px 0;
+      }
+
+      .chart-grid {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .grid-line {
+        border-bottom: 1px dashed rgba(var(--primary-rgb), 0.2);
+        font-size: 11px;
+        color: var(--primary);
+        padding: 5px 0;
+      }
+
+      .trend-lines {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+
+      .trend-lines svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .trend-line {
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+      }
+
+      .trend-line.rice { stroke: #4CAF50; }
+      .trend-line.wheat { stroke: #FFC107; }
+      .trend-line.corn { stroke: #2196F3; }
+
+      .time-labels {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        color: var(--primary);
+        font-size: 12px;
+      }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+      <div class="status-bar"></div>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+          <h1>Agrora</h1>
+          <p>Smart · Sustainable · Superior</p>
+          <p class="cn-slogan">智慧 · 可持续 · 卓越</p>
+        </div>
+
+        <!-- 导航栏 -->
+        <div class="nav">
+          <button onclick="showSection('chat')" class="active">AgriAgent</button>
+            <button onclick="showSection('market')">市场行情</button>
+            <button onclick="showSection('training')">技术培训</button>
+            <button onclick="showAlert()">查看提醒</button>
+        </div>
+
+        <!-- 农业咨询 -->
+        <div id="chat-section" class="section active">
+            <div class="chat-box" id="chat-box">
+            <div class="message bot-message">您好！我是AgrOra，很高兴为您服务！👋</div>
+            
+            <div class="message user-message">你能帮我些什么？</div>
+            
+            <div class="message bot-message">我是一位专业的农业助手，可以帮您解决种植、病虫害、市场行情等各类问题。让我举几个例子：</div>
+
+            <div class="message user-message">我的田地在江苏，想种水稻，该怎么选择品种？</div>
+            
+            <div class="message bot-message">对于江苏的黏土田，我推荐您种植"南粳46"。这个品种适应性强，产量稳定。每亩建议种植密度20万株，基肥使用复合肥40公斤。您还需要了解其他种植细节吗？</div>
+
+            <!-- 添加搜索结果展示 -->
+            <div class="message bot-message search-results">
+                📊 相关搜索结果：
+                
+                <div class="search-item">
+                    <a href="https://www.moa.gov.cn/nybgb/" target="_blank">
+                        <span class="source">农业部数据</span>
+                        南粳46平均亩产650-700公斤
+                    </a>
+                </div>
+
+                <div class="search-item">
+                    <a href="https://www.jaas.ac.cn/" target="_blank">
+                        <span class="source">江苏农科院报告</span>
+                        适应性强，抗倒伏，耐肥水
+                    </a>
+                </div>
+
+                <div class="search-item">
+                    <a href="https://www.agri.cn/market/" target="_blank">
+                        <span class="source">最新市场价</span>
+                        育种价 98元/公斤
+                    </a>
+                </div>
+
+                <div class="search-item">
+                    <a href="https://www.farmer.com.cn/reviews/" target="_blank">
+                        <span class="source">种植户反馈</span>
+                        抗病性好，米质优良
+                    </a>
+                </div>
+                
+                <div class="more-results">
+                    👉 <a href="https://www.agridata.cn/data.html#/datasearch" target="_blank">查看更多数据</a>
+                </div>
+            </div>
+
+            <div class="message user-message">我的苹果树叶子上有黑斑，这是怎么回事？</div>
+
+            <div class="message bot-message">建议您上传照片给我看看。通常苹果树叶片黑斑可能是苹果黑星病，需要及时防治。您可以点击"上传图片"，我来帮您仔细诊断。</div>
+
+            <div class="message user-message">现在小麦价格怎么样？</div>
+
+            <div class="message bot-message">目前小麦价格为2.9元/公斤，近期市场较为稳定。我还可以为您对比不同地区的价格，帮您找到最佳销售渠道。</div>
+
+            <div class="message user-message">我想学习葡萄修剪技术</div>
+
+            <div class="message bot-message">我这里有详细的葡萄修剪视频教程，包括：
+- 整形修剪的基本原则
+- 不同生长时期的修剪方法
+- 常见问题解决方案
+您想先了解哪个部分？</div>
+
+            <div class="message bot-message">您可以：
+📝 直接输入问题
+📸 上传图片咨询
+🎤 按住语音按钮说话
+
+我会根据您的需求提供专业建议！</div>
+
+            <div class="message bot-message">
+                <div class="message-content">
+                    <p>🤖 您可以这样使用我：</p>
+                    <div class="example-box">
+                        <p class="example-title">🌾 无人机监控案例</p>
+                        <div class="example-dialog">
+                            <p class="user-example">👤 [按住说话] 帮我飞起无人机进行作物长势监控</p>
+                            <div class="bot-example">
+                                <p>🛸 无人机已启动，开始巡航监测...</p>
+                                <div class="drone-monitor">
+                                    <div class="video-placeholder">
+                                        <div class="drone-animation">
+                                            <span class="material-icons drone-icon">flight</span>
+                                            <div class="scan-waves"></div>
+                                        </div>
+                                    </div>
+                                    <div class="monitor-stats">
+                                        <div class="stat-item">
+                                            <span class="material-icons">crop_free</span>
+                                            <div class="stat-content">
+                                                <div class="stat-label">已扫描</div>
+                                                <div class="stat-value">35亩</div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="material-icons">check_circle</span>
+                                            <div class="stat-content">
+                                                <div class="stat-label">生长正常</div>
+                                                <div class="stat-value">28亩</div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="material-icons">grass</span>
+                                            <div class="stat-content">
+                                                <div class="stat-label">疑似杂草</div>
+                                                <div class="stat-value">4亩</div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="material-icons">warning</span>
+                                            <div class="stat-content">
+                                                <div class="stat-label">生长异常</div>
+                                                <div class="stat-value">3亩</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="input-area">
+            <input type="text" id="userInput" placeholder="输入您的问题..." />
+                <button onclick="sendMessage()">发送</button>
+                <label for="imageUpload">上传图片</label>
+            <input
+              type="file"
+              id="imageUpload"
+              accept="image/*"
+              onchange="uploadImage()"
+            />
+            <div class="voice-btn" id="voiceBtn">按住说话</div>
+            <div class="recording-wave" id="recordingWave"></div>
+            </div>
+        </div>
+
+        <!-- 市场行情 -->
+        <div id="market-section" class="section">
+            <h2>农产品价格行情</h2>
+            <table class="market-table">
+                <tr>
+                    <th>农产品</th>
+                    <th>当前价格 (元/公斤)</th>
+                    <th>近30天趋势</th>
+                </tr>
+                <tr>
+                    <td>小麦</td>
+                    <td>2.9</td>
+                    <td>稳定</td>
+                </tr>
+                <tr>
+                    <td>水稻</td>
+                    <td>3.2</td>
+                    <td>小幅上涨</td>
+                </tr>
+                <tr>
+                    <td>苹果</td>
+                    <td>6.0</td>
+                    <td>下降</td>
+                </tr>
+            </table>
+
+            <div class="stats-link">
+                <a href="https://nynct.jiangsu.gov.cn/col/col12552/index.html" class="stats-button">
+                    <div class="stats-icon">
+                        <span class="material-icons">query_stats</span>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-title">农业统计数据</div>
+                        <div class="stats-desc">查看地方统计局最新农业数据报告 ></div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="price-trends">
+                <div class="trends-header">
+                    <h4>价格趋势（元/公斤）</h4>
+                    <div class="trends-legend">
+                        <span class="legend-item"><span class="dot rice"></span>水稻</span>
+                        <span class="legend-item"><span class="dot wheat"></span>小麦</span>
+                        <span class="legend-item"><span class="dot corn"></span>玉米</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-grid">
+                        <div class="grid-line"></div>
+                        <div class="grid-line">6.0</div>
+                        <div class="grid-line">4.0</div>
+                        <div class="grid-line">2.0</div>
+                    </div>
+                    <div class="trend-lines">
+                        <svg viewBox="0 0 300 150" preserveAspectRatio="none">
+                            <!-- 水稻价格线 -->
+                            <path class="trend-line rice" d="M0,70 C50,65 100,80 150,75 S250,60 300,65" />
+                            <!-- 小麦价格线 -->
+                            <path class="trend-line wheat" d="M0,90 C50,85 100,95 150,88 S250,80 300,85" />
+                            <!-- 玉米价格线 -->
+                            <path class="trend-line corn" d="M0,100 C50,105 100,95 150,98 S250,90 300,95" />
+                        </svg>
+                    </div>
+                    <div class="time-labels">
+                        <span>1月</span>
+                        <span>2月</span>
+                        <span>3月</span>
+                        <span>4月</span>
+                        <span>5月</span>
+                        <span>6月</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术培训 -->
+        <div id="training-section" class="section">
+            <h2>农业技术培训</h2>
+            <div class="training-content">
+                <h3>水稻种植技术</h3>
+                <p>水稻是我国主要粮食作物，种植时需注意以下几点：...</p>
+          </div>
+          <div>
+            <video 
+                id="tutorial-video"
+                controls
+                style="width: 100%; border-radius: 12px; margin: 10px 0;"
+                preload="auto"
+                playsinline
+            >
+                <source src="chat_robot_out.mp4" autoplay="true" type="video/mp4">
+                您的浏览器不支持视频播放。
+            </video>
+          </div>
+          <div class="training-list">
+            <h4>培训资料</h4>
+            <ul>
+                <li>
+                    <span class="material-icons">description</span>
+                    <a href="#">水稻种植技术要点 <small>PDF</small></a>
+                </li>
+                <li>
+                    <span class="material-icons">smart_display</span>
+                    <a href="#">病虫害防治指南 <small>视频</small></a>
+                </li>
+                <li>
+                    <span class="material-icons">menu_book</span>
+                    <a href="#">农药使用安全手册 <small>PDF</small></a>
+                </li>
+                <li>
+                    <span class="material-icons">play_lesson</span>
+                    <a href="#">智能灌溉系统使用教程 <small>视频</small></a>
+                </li>
+            </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提醒弹窗 -->
+    <div id="alert-box" class="alert-box">
+        <p>明天有暴雨，请检查田间排水！</p>
+      </div>
+    </div>
+    <script>
+      function flyDrone(){
+        fetch("http://47.100.102.7:10314/drone-control-api/api/devices-dock/control-drc", {
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "cache-control": "no-cache",
+            "content-type": "application/json",
+            "pragma": "no-cache",
+            "proxy-connection": "keep-alive",
+            "satoken": "599caf01-19a6-476f-8cb6-c96245077f76"
+          },
+          "referrer": "http://localhost:5175/",
+          "referrerPolicy": "strict-origin-when-cross-origin",
+          "body": "{\"deviceId\":\"1892761557721550848\",\"handType\":\"takeoff_to_point\",\"data\":{\"max_speed\":3,\"commander_mode_lost_action\":1,\"rc_lost_action\":2,\"rth_altitude\":30,\"security_takeoff_height\":30,\"target_height\":30,\"target_longitude\": 121.040721472,\"target_latitude\": 31.296657347,\"commander_flight_height\":30,\"rth_mode\":1,\"commander_flight_mode\":1}}",
+          "method": "POST",
+          "mode": "cors",
+          "credentials": "omit"
+        }).then(response => response.json())
+          .then(data => {
+            console.log('无人机起飞成功', data);
+          })
+      }
+      function backDrone(){
+        fetch("http://47.100.102.7:10314/drone-control-api/api/devices-dock/control", {
+            "headers": {
+              "accept": "application/json, text/plain, */*",
+              "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+              "cache-control": "no-cache",
+              "content-type": "application/json",
+              "pragma": "no-cache",
+              "proxy-connection": "keep-alive",
+              "satoken": "599caf01-19a6-476f-8cb6-c96245077f76"
+            },
+            "referrer": "http://localhost:5175/",
+            "referrerPolicy": "strict-origin-when-cross-origin",
+            "body": "{\"deviceId\":\"1892761557721550848\",\"handType\":\"return_home\"}",
+            "method": "POST",
+            "mode": "cors",
+            "credentials": "omit"
+          }).then(response => response.json())
+            .then(data => {
+              console.log('无人机降落成功', data);
+            })
+      }
+    </script>
+    <script>
+        // 切换页面
+        function showSection(sectionId) {
+        document.querySelectorAll(".section").forEach((section) => {
+          section.classList.remove("active");
+        });
+        document.getElementById(`${sectionId}-section`).classList.add("active");
+        document.querySelectorAll(".nav button").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        document
+          .querySelector(`button[onclick="showSection('${sectionId}')"]`)
+          .classList.add("active");
+        }
+
+        // 发送消息
+        function sendMessage() {
+        const input = document.getElementById("userInput");
+        const chatBox = document.getElementById("chat-box");
+          const userText = input.value.trim();
+            if (userText) {
+          const userMsg = document.createElement("div");
+          userMsg.className = "message user-message";
+                userMsg.textContent = userText;
+                chatBox.appendChild(userMsg);
+
+          const botMsg = document.createElement("div");
+          botMsg.className = "message bot-message";
+                botMsg.textContent = getBotResponse(userText);
+                chatBox.appendChild(botMsg);
+
+          input.value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        // 模拟机器人回复
+        function getBotResponse(text) {
+        if (text.includes("价格"))
+          return "当前小麦价格为2.9元/公斤，近期稳定。";
+        if (text.includes("叶子发黄"))
+          return "可能是缺氮，建议每亩追施尿素15公斤，均匀施用。";
+        if (text.includes("虫子"))
+          return "请上传图片以便识别，或描述更多细节。";
+
+        if (text.includes("起飞")){
+          if (text.includes("确定")){
+            flyDrone();
+            return "起飞成功！无人机正在巡检中...";
+          }
+          return "为防止无人机被恶意使用，请输入起飞口令进行二次验证：";
+        }
+        if (text.includes("降落")){
+          backDrone();
+          return "降落成功！无人机已返回地面。";
+        }
+        return "请提供更多信息，我会尽力帮您！";
+        }
+
+        // 上传图片
+        function uploadImage() {
+        const fileInput = document.getElementById("imageUpload");
+        const chatBox = document.getElementById("chat-box");
+            if (fileInput.files.length > 0) {
+          const userMsg = document.createElement("div");
+          userMsg.className = "message user-message";
+          userMsg.textContent = "已上传图片";
+                chatBox.appendChild(userMsg);
+
+          const botMsg = document.createElement("div");
+          botMsg.className = "message bot-message";
+          botMsg.textContent =
+            "识别为稻飞虱，建议使用吡虫啉10克/亩喷雾，注意防护。";
+                chatBox.appendChild(botMsg);
+
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+      // 语音输入功能
+      const voiceBtn = document.getElementById("voiceBtn");
+      const recordingWave = document.getElementById("recordingWave");
+      let recognition = null;
+
+      // 检查浏览器是否支持语音识别
+      if ("webkitSpeechRecognition" in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = "zh-CN";
+
+        recognition.onresult = function (event) {
+          const text = event.results[0][0].transcript;
+          document.getElementById("userInput").value = text;
+          sendMessage();
+        };
+
+        recognition.onerror = function (event) {
+          console.error("语音识别错误:", event.error);
+          alert("语音识别失败，请重试");
+        };
+      }
+
+      // 按住说话功能
+      voiceBtn.addEventListener("mousedown", function (e) {
+        if (!recognition) {
+          alert("您的浏览器不支持语音识别功能");
+          return;
+        }
+
+        voiceBtn.classList.add("recording");
+        voiceBtn.textContent = "松开结束";
+        recordingWave.style.display = "block";
+        recognition.start();
+      });
+
+      voiceBtn.addEventListener("mouseup", function (e) {
+        if (!recognition) return;
+
+        voiceBtn.classList.remove("recording");
+        voiceBtn.textContent = "按住说话";
+        recordingWave.style.display = "none";
+        recognition.stop();
+      });
+
+      // 处理移动端触摸事件
+      voiceBtn.addEventListener("touchstart", function (e) {
+        e.preventDefault();
+        if (!recognition) {
+          alert("您的浏览器不支持语音识别功能");
+          return;
+        }
+
+        voiceBtn.classList.add("recording");
+        voiceBtn.textContent = "松开结束";
+        recordingWave.style.display = "block";
+        recognition.start();
+      });
+
+      voiceBtn.addEventListener("touchend", function (e) {
+        e.preventDefault();
+        if (!recognition) return;
+
+        voiceBtn.classList.remove("recording");
+        voiceBtn.textContent = "按住说话";
+        recordingWave.style.display = "none";
+        recognition.stop();
+      });
+
+        // 显示提醒
+        function showAlert() {
+        const alertBox = document.getElementById("alert-box");
+        alertBox.style.display = "block";
+        setTimeout(() => (alertBox.style.display = "none"), 5000);
+        }
+
+        // 回车发送
+      document.getElementById("userInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+        });
+    </script>
+    <script
+      data-embed-id="ed2f3481-36d6-4e9d-addb-0487185016ad"
+      data-base-api-url="http://localhost:3001/api/embed"
+      src="http://localhost:3001/embed/anythingllm-chat-widget.min.js">
+    </script>
+</body>
+</html>
