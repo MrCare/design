@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>植被长势分析</title>
+    <!-- 添加Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- 添加图标库 -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --success-color: #00ff88;
+            --warning-color: #fbbc05;
+            --danger-color: #ea4335;
+            --light-bg: #f8f9fe;
+            --card-bg: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #636e72;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.08);
+            --gradient-primary: linear-gradient(135deg, #4285f4, #34a853);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--light-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
+        }
+
+        .control-btn i {
+            font-size: 1.2em;
+        }
+
+        #playPauseBtn {
+            min-width: 100px;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+        }
+
+        #playPauseBtn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .info-panel {
+            position: fixed;
+            top: 10px;
+            left: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            min-width: 280px;
+        }
+
+        .time-display {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .time-display i {
+            color: var(--primary-color);
+        }
+
+        .info-item {
+            margin: 8px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-item span {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* 分析建议面板 */
+        .analysis-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .analysis-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .analysis-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .analysis-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .analysis-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .trend-up {
+            background: rgba(52, 168, 83, 0.1);
+            color: var(--secondary-color);
+        }
+
+        .trend-down {
+            background: rgba(234, 67, 53, 0.1);
+            color: var(--danger-color);
+        }
+
+        .trend-stable {
+            background: rgba(251, 188, 5, 0.1);
+            color: var(--warning-color);
+        }
+
+        /* 时间序列选择器 */
+        .time-series-selector {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+            display: flex;
+            gap: 10px;
+        }
+
+        .series-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .series-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+        }
+
+        @media (max-width: 768px) {
+            .info-panel {
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            .controls {
+                bottom: 10px;
+                padding: 0 10px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .control-btn {
+                flex: 1;
+                min-width: 0;
+                padding: 8px 12px;
+                justify-content: center;
+            }
+
+            .analysis-panel {
+                top: auto;
+                bottom: 80px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                max-height: 40vh;
+            }
+
+            .time-series-selector {
+                flex-direction: column;
+                left: 10px;
+                right: 10px;
+                transform: none;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info-panel">
+        <div class="time-display">
+            <i class='bx bx-calendar'></i>
+            <span id="timeLabel">2024年11月</span>
+        </div>
+        <div class="info-item">
+            <i class='bx bx-satellite'></i>卫星：<span>Sentinel-2</span>
+        </div>
+        <div class="info-item">
+            <i class='bx bx-ruler'></i>空间分辨率：<span>10米</span>
+        </div>
+    </div>
+
+    <div class="time-series-selector">
+        <button class="series-btn active" onclick="switchTimeSeries('current')">2024-2025年度</button>
+        <button class="series-btn" onclick="switchTimeSeries('previous')">2023-2024年度</button>
+    </div>
+
+    <div class="analysis-panel">
+        <div class="analysis-header">
+            <i class='bx bx-line-chart'></i>长势分析
+        </div>
+        <div class="analysis-content">
+            <div class="analysis-item">
+                <div class="analysis-label">当前生长阶段</div>
+                <span id="growthStage">冬小麦返青期</span>
+            </div>
+            <div class="analysis-item">
+                <div class="analysis-label">长势趋势</div>
+                <div class="trend-indicator trend-up">
+                    <i class='bx bx-trending-up'></i>
+                    <span id="growthTrend">长势良好</span>
+                </div>
+            </div>
+            <div class="analysis-item">
+                <div class="analysis-label">同期对比</div>
+                <div id="comparison">较去年同期长势提升15%，植被覆盖度增加</div>
+            </div>
+            <div class="analysis-item">
+                <div class="analysis-label">建议措施</div>
+                <div id="suggestions">
+                    1. 及时补充水分<br>
+                    2. 注意防寒保温<br>
+                    3. 适时追肥
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <button class="control-btn" onclick="prevSlide()">
+                <i class='bx bx-chevron-left'></i>上一期
+            </button>
+            <button class="control-btn" id="playPauseBtn" onclick="toggleAutoPlay()">
+                <i class='bx bx-play'></i>播放
+            </button>
+            <button class="control-btn" onclick="nextSlide()">
+                下一期<i class='bx bx-chevron-right'></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 添加必要的JavaScript库 -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/georaster"></script>
+    <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
+
+    <script>
+        // 定义两个时间序列的图层数据
+        const timeSeriesData = {
+            current: [
+                { url: 'data/S2_2024-11_visualized.tif', time: '2024年11月', growth: '越冬期', trend: '稳定', comparison: '与去年同期基本持平', suggestions: '注意防寒保温，适时灌溉' },
+                { url: 'data/S2_2024-12_visualized.tif', time: '2024年12月', growth: '越冬期', trend: '良好', comparison: '较去年同期增长5%', suggestions: '继续防寒，控制灌溉' },
+                { url: 'data/S2_2025-01_visualized.tif', time: '2025年1月', growth: '越冬期', trend: '良好', comparison: '较去年同期增长10%', suggestions: '注意防寒，适时追肥' },
+                { url: 'data/S2_2025-02_visualized.tif', time: '2025年2月', growth: '返青期', trend: '良好', comparison: '较去年同期增长15%', suggestions: '及时补充水分，适量追肥' },
+                { url: 'data/S2_2025-03_visualized.tif', time: '2025年3月', growth: '拔节期', trend: '优秀', comparison: '较去年同期增长20%', suggestions: '控制水分，防止倒伏' }
+            ],
+            previous: [
+                { url: 'data/S2_2023-11_visualized.tif', time: '2023年11月', growth: '越冬期', trend: '一般', comparison: '基期数据', suggestions: '加强田间管理' },
+                { url: 'data/S2_2023-12_visualized.tif', time: '2023年12月', growth: '越冬期', trend: '一般', comparison: '基期数据', suggestions: '注意防寒保温' },
+                { url: 'data/S2_2024-01_visualized.tif', time: '2024年1月', growth: '越冬期', trend: '一般', comparison: '基期数据', suggestions: '适时补充水分' },
+                { url: 'data/S2_2024-02_visualized.tif', time: '2024年2月', growth: '返青期', trend: '良好', comparison: '基期数据', suggestions: '及时追肥' },
+                { url: 'data/S2_2024-03_visualized.tif', time: '2024年3月', growth: '拔节期', trend: '良好', comparison: '基期数据', suggestions: '控制水分' }
+            ]
+        };
+
+        let currentSeries = 'current';
+        let currentLayerIndex = 0;
+        let currentLayer = null;
+        let autoPlayInterval = null;
+        const autoPlayDelay = 2000;
+
+        // 初始化地图
+        const map = L.map('map').setView([30.97, 120.64], 12);
+
+        // 加载OpenStreetMap底图
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 切换时间序列
+        function switchTimeSeries(series) {
+            currentSeries = series;
+            currentLayerIndex = 0;
+            document.querySelectorAll('.series-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadLayer(0);
+        }
+
+        // 更新分析面板
+        function updateAnalysis(data) {
+            document.getElementById('growthStage').textContent = data.growth;
+            document.getElementById('growthTrend').textContent = data.trend;
+            document.getElementById('comparison').textContent = data.comparison;
+            document.getElementById('suggestions').innerHTML = data.suggestions.split('，').join('<br>');
+            
+            // 更新趋势指示器样式
+            const trendIndicator = document.querySelector('.trend-indicator');
+            trendIndicator.className = 'trend-indicator';
+            if (data.trend.includes('优秀') || data.trend.includes('良好')) {
+                trendIndicator.classList.add('trend-up');
+            } else if (data.trend.includes('一般')) {
+                trendIndicator.classList.add('trend-stable');
+            } else {
+                trendIndicator.classList.add('trend-down');
+            }
+        }
+
+        // 加载并显示TIF图层
+        async function loadLayer(index) {
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+            }
+
+            const currentData = timeSeriesData[currentSeries][index];
+            const parser = await fetch(currentData.url)
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => {
+                    return parseGeoraster(arrayBuffer);
+                });
+
+            currentLayer = new GeoRasterLayer({
+                georaster: parser,
+                opacity: 1,
+                resolution: 256
+            });
+
+            currentLayer.addTo(map);
+            document.getElementById('timeLabel').textContent = currentData.time;
+            updateAnalysis(currentData);
+
+            if (index === 0) {
+                map.fitBounds(currentLayer.getBounds());
+            }
+        }
+
+        // 切换到下一期
+        async function nextSlide() {
+            currentLayerIndex = (currentLayerIndex + 1) % timeSeriesData[currentSeries].length;
+            await loadLayer(currentLayerIndex);
+        }
+
+        // 切换到上一期
+        async function prevSlide() {
+            currentLayerIndex = (currentLayerIndex - 1 + timeSeriesData[currentSeries].length) % timeSeriesData[currentSeries].length;
+            await loadLayer(currentLayerIndex);
+        }
+
+        // 播放/暂停控制
+        function toggleAutoPlay() {
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                playPauseBtn.innerHTML = '<i class="bx bx-play"></i>播放';
+            } else {
+                autoPlayInterval = setInterval(nextSlide, autoPlayDelay);
+                playPauseBtn.innerHTML = '<i class="bx bx-pause"></i>暂停';
+            }
+        }
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                prevSlide();
+            } else if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === ' ') {
+                toggleAutoPlay();
+            }
+        });
+
+        // 初始加载第一期数据
+        loadLayer(0);
+    </script>
+</body>
+</html>
